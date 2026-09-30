@@ -1,4 +1,3 @@
-```markdown
 # 🤖 بوت تيليجرام ذكي - Gemini 1.5 Pro
 
 <div align="center">
