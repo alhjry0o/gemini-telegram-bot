@@ -1,67 +1,73 @@
 # -*- coding: utf-8 -*-
-"""نقطة انطلاق البوت"""
-
-import logging
+"""نقطة انطلاق البوت — Main Entry Point"""
 
 from telegram import Update
 from telegram.ext import (
-    Application, CommandHandler, MessageHandler,
-    CallbackQueryHandler, filters,
+    Application,
+    CommandHandler,
+    MessageHandler,
+    CallbackQueryHandler,
+    filters,
 )
 
 from config.settings import TELEGRAM_BOT_TOKEN, validate_config
 from handlers.start_handler import start_command
 from handlers.stats_handler import stats_command
-from handlers.message_handler import handle_message
 from handlers.admin_handler import admin_command, admin_callback
+from handlers.message_handler import handle_message
+from utils.logger import setup_logger
 
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
-)
-logger = logging.getLogger(__name__)
+logger = setup_logger("bot")
 
 
 async def error_handler(update: object, context) -> None:
-    logger.error(f"استثناء: {context.error}", exc_info=True)
+    """معالج الأخطاء العام."""
+    logger.error(f"❌ استثناء: {context.error}", exc_info=context.error)
 
 
 def main() -> None:
-    validate_config()
+    """الدالة الرئيسية لتشغيل البوت."""
     logger.info("🚀 جاري تشغيل البوت...")
 
+    # التحقق من الإعدادات
+    validate_config()
+
+    # بناء التطبيق
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 
-    # =====================================================================
-    # أوامر المستخدمين
-    # =====================================================================
+    # =========================================================================
+    # معالجات الأوامر
+    # =========================================================================
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("stats", stats_command))
-
-    # =====================================================================
-    # أوامر المطور
-    # =====================================================================
     application.add_handler(CommandHandler("admin", admin_command))
 
-    # =====================================================================
-    # معالج أزرار لوحة التحكم
-    # =====================================================================
+    # =========================================================================
+    # معالج الأزرار
+    # =========================================================================
     application.add_handler(CallbackQueryHandler(admin_callback))
 
-    # =====================================================================
-    # معالج الرسائل العامة
-    # =====================================================================
+    # =========================================================================
+    # معالج الرسائل العامة (نص + وسائط)
+    # =========================================================================
     application.add_handler(
         MessageHandler(
-            filters.TEXT | filters.PHOTO | filters.Document.ALL
-            | filters.VIDEO | filters.VOICE | filters.AUDIO,
+            filters.TEXT
+            | filters.PHOTO
+            | filters.Document.ALL
+            | filters.VIDEO
+            | filters.VOICE
+            | filters.AUDIO,
             handle_message,
         )
     )
 
+    # =========================================================================
+    # معالج الأخطاء
+    # =========================================================================
     application.add_error_handler(error_handler)
-    logger.info("✅ البوت جاهز!")
+
+    logger.info("✅ البوت جاهز للعمل!")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
