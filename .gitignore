@@ -1,0 +1,13 @@
+.env
+users.txt
+__pycache__/
+*.pyc
+*.pyo
+*.log
+logs/*.log
+data/uploads/*
+data/projects/*
+!data/uploads/.gitkeep
+!data/projects/.gitkeep
+.venv/
+venv/
